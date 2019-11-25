@@ -1,16 +1,21 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <errno.h>
+#include <string.h>
+#include <stdlib.h>
+#include <sys/wait.h>
+#include "headers/dataStructure.h"
+#include "headers/Utils.h"
 
 #define MAX_LINE 80 /* 80 chars per line, per command, should be enough. */
+
 
 /* The setup function below will not return any value, but it will just: read
 in the next command line; separate it into distinct arguments (using blanks as
 delimiters), and set the args array entries to point to the beginning of what
 will become null-terminated, C-style strings. */
 
-void setup(char inputBuffer[], char *args[],int *background)
-{
+void setup(char inputBuffer[], char *args[], int *background) {
     int length, /* # of characters in the command line */
             i,      /* loop index for accessing inputBuffer array */
             start,  /* index where beginning of next command parameter is */
@@ -19,7 +24,7 @@ void setup(char inputBuffer[], char *args[],int *background)
     ct = 0;
 
     /* read what the user enters on the command line */
-    length = read(STDIN_FILENO,inputBuffer,MAX_LINE);
+    length = read(STDIN_FILENO, inputBuffer, MAX_LINE);
 
     /* 0 is the system predefined file descriptor for stdin (standard input),
        which is the user's screen in this case. inputBuffer by itself is the
@@ -35,18 +40,18 @@ void setup(char inputBuffer[], char *args[],int *background)
 /* if the process is in the read() system call, read returns -1
   However, if this occurs, errno is set to EINTR. We can check this  value
   and disregard the -1 value */
-    if ( (length < 0) && (errno != EINTR) ) {
+    if ((length < 0) && (errno != EINTR)) {
         perror("error reading the command");
         exit(-1);           /* terminate with error code of -1 */
     }
 
-    printf(">>%s<<",inputBuffer);
-    for (i=0;i<length;i++){ /* examine every character in the inputBuffer */
+    printf(">>%s<<", inputBuffer);
+    for (i = 0; i < length; i++) { /* examine every character in the inputBuffer */
 
-        switch (inputBuffer[i]){
+        switch (inputBuffer[i]) {
             case ' ':
             case '\t' :               /* argument separators */
-                if(start != -1){
+                if (start != -1) {
                     args[ct] = &inputBuffer[start];    /* set up pointer */
                     ct++;
                 }
@@ -55,7 +60,7 @@ void setup(char inputBuffer[], char *args[],int *background)
                 break;
 
             case '\n':                 /* should be the final char examined */
-                if (start != -1){
+                if (start != -1) {
                     args[ct] = &inputBuffer[start];
                     ct++;
                 }
@@ -66,33 +71,36 @@ void setup(char inputBuffer[], char *args[],int *background)
             default :             /* some other character */
                 if (start == -1)
                     start = i;
-                if (inputBuffer[i] == '&'){
-                    *background  = 1;
-                    inputBuffer[i-1] = '\0';
+                if (inputBuffer[i] == '&') {
+                    *background = 1;
+                    inputBuffer[i - 1] = '\0';
                 }
         } /* end of switch */
     }    /* end of for */
     args[ct] = NULL; /* just in case the input line was > 80 */
 
     for (i = 0; i <= ct; i++)
-        printf("args %d = %s\n",i,args[i]);
+        printf("args %d = %s\n", i, args[i]);
 } /* end of setup routine */
 
-int main(void)
-{
+int main(int argc, char *argv[], char *envp[]) {
     char inputBuffer[MAX_LINE]; /*buffer to hold command entered */
     int background; /* equals 1 if a command is followed by '&' */
-    char *args[MAX_LINE/2 + 1]; /*command line arguments */
-    while (1){
+    char *args[MAX_LINE / 2 + 1]; /*command line arguments */
+
+    findPathVariables(envp);
+
+    while (1) {
         background = 0;
         printf("myshell: ");
         /*setup() calls exit() when Control-D is entered */
         setup(inputBuffer, args, &background);
-
+//        findCommand("lol");
         /** the steps are:
         (1) fork a child process using fork()
         (2) the child process will invoke execv()
         (3) if background == 0, the parent will wait,
         otherwise it will invoke the setup() function again. */
     }
+    return 0;
 }
