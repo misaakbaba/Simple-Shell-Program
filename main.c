@@ -25,7 +25,7 @@ char *findPathVariables(char *envp[]);
 
 char *findCommandPath(char path[], char command[]);
 
-char *execCommand(char path[], char command[]);
+char *execCommand(char path[], char *arguments[]);
 
 char *splitString(char str[], char delimeter[]);
 
@@ -38,6 +38,8 @@ void printList(ListNodePtr currentPtr);
 int readDir(char dirName[], char command[]);
 
 char *findPath(char command[]);
+
+char *getCommand(char command[]);
 
 ListNodePtr pathPtr;
 
@@ -109,9 +111,24 @@ void setup(char inputBuffer[], char *args[], int *background) {
         } /* end of switch */
     }    /* end of for */
     args[ct] = NULL; /* just in case the input line was > 80 */
+    char *arguments[ct];
+//    for (i = 0; i < ct-1; i++) {
+//        printf("args %d = %s\n", i, args[i]);
+//        strcpy(arguments[i], args[i + 1]);
+//    }
 
-    for (i = 0; i <= ct; i++)
-        printf("args %d = %s\n", i, args[i]);
+
+    if (args[0] == NULL) {
+//        printf("heloo");
+        return;
+    }
+    char *command = getCommand(args[0]);
+    strcpy(arguments[0],command);
+    strcpy(arguments[1],args[1]);
+    strcpy(arguments[2],args[2]);
+//    printf("%s",)
+
+//    execCommand(command,);
 } /* end of setup routine */
 
 /*
@@ -120,28 +137,24 @@ void setup(char inputBuffer[], char *args[], int *background) {
  * hoca ilk gönderdiğinde de böyleydi sebebini bilmiyorum
  */
 int main(int argc, char *argv[]) {
-//    char inputBuffer[MAX_LINE]; /*buffer to hold command entered */
-//    int background; /* equals 1 if a command is followed by '&' */
-//    char *args[MAX_LINE / 2 + 1]; /*command line arguments */
+    char inputBuffer[MAX_LINE]; /*buffer to hold command entered */
+    int background; /* equals 1 if a command is followed by '&' */
+    char *args[MAX_LINE / 2 + 1]; /*command line arguments */
 
-    char sstr[] = "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games";
-    char delim[] = ":";
     char *ptr = getenv("PATH"); //path variable ini çeken asıl fonksiyon.
-    splitString(ptr, delim);
-    findPath("lol");
-
-//    while (1) {
-//        background = 0;
-//        printf("myshell: ");
-//        /*setup() calls exit() when Control-D is entered */
-//        setup(inputBuffer, args, &background);
-////        findCommand("lol");
-//        /** the steps are:
-//        (1) fork a child process using fork()
-//        (2) the child process will invoke execv()
-//        (3) if background == 0, the parent will wait,
-//        otherwise it will invoke the setup() function again. */
-//    }
+    printf("%s",ptr);
+    while (1) {
+        background = 0;
+        printf("myshell: ");
+        /*setup() calls exit() when Control-D is entered */
+        setup(inputBuffer, args, &background);
+//        findCommand("lol");
+        /** the steps are:
+        (1) fork a child process using fork()
+        (2) the child process will invoke execv()
+        (3) if background == 0, the parent will wait,
+        otherwise it will invoke the setup() function again. */
+    }
     return 0;
 }
 
@@ -172,8 +185,6 @@ char *findCommandPath(char path[], char command[]) {
         printf("%s\n", inbuf);
 //        perror("Child failed to execv the command");
 //        return 1;
-
-
     }
     if (childpid != wait(NULL)) {                          /* parent code */
         perror("Parent failed to wait");
@@ -182,17 +193,16 @@ char *findCommandPath(char path[], char command[]) {
 }
 
 // taslak halinde. biraz değiştirilip güncel command çalıştırma fonksiyonu olucak.
-char *execCommand(char path[], char command[]) {
+char *execCommand(char path[], char *arguments[]) {
     pid_t childpid;
-    char *findPath = "/usr/bin/find";
-    char *arguments[] = {findPath, path, "-name", command, NULL};/* child code */
+//    char *arguments[] = {path, NULL};/* child code */
     childpid = fork();
     if (childpid == -1) {
         perror("Failed to fork");
         return 1;
     }
     if (childpid == 0) {
-        execv(findPath, arguments);
+        execv(path, arguments);
         perror("Child failed to execv the command");
         return 1;
     }
@@ -281,16 +291,17 @@ int readDir(char dirName[], char command[]) {//function that read file name from
     while ((in_file = readdir(FD)) != NULL) { // to ignore parent directtories
         if (!strcmp(in_file->d_name, ".directory")) {
             continue;
-        }
-        if (!strcmp(in_file->d_name, ".")) {
+        } else if (!strcmp(in_file->d_name, ".")) {
             continue;
-        }
-        if (!strcmp(in_file->d_name, "..")) {
+        } else if (!strcmp(in_file->d_name, "..")) {
             continue;
+        } else if (!strcmp(in_file->d_name, command)) {
+            return 0;
         }
 
-        printf("%s\n", in_file->d_name);
+//        printf("%s\n", in_file->d_name);
     }
+    return -1;
 }
 
 //bu fonksiyon linked listi gezip sürekli readDir fonksiyonunu çağıracak. readDir den eğer true dönerse o anda denenen path i return edecek
@@ -299,14 +310,29 @@ char *findPath(char command[]) {
     // if list is empty
     if (isEmpty(pathPtr)) {
         puts("List is empty.\n");
+        return NULL;
     } else {
-        puts("The list is:");
-
         // while not the end of the list
         while (pathPtr != NULL) {
-            printf("%s --> ", pathPtr->data);
+            int result = readDir(pathPtr->data, command);
+            if (result == 0) {
+                return pathPtr->data;
+            }
             pathPtr = pathPtr->nextPtr;
         }
-        puts("NULL\n");
     }
+    return NULL;
+}
+
+char *getCommand(char command[]) {
+    char delim[] = ":";
+    char *ptr = getenv("PATH"); //path variable ini çeken asıl fonksiyon.
+    splitString(ptr, delim);
+//    printf("%s", findPath("find"));
+    char *commandPath = findPath(command);
+    strcat(commandPath, "/");
+    strcat(commandPath, command);
+//    printf("%s", commandPath);
+//    execCommand(commandPath, commandPath);
+    return commandPath;
 }
