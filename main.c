@@ -112,23 +112,28 @@ void setup(char inputBuffer[], char *args[], int *background) {
     }    /* end of for */
     args[ct] = NULL; /* just in case the input line was > 80 */
     char *arguments[ct];
-//    for (i = 0; i < ct-1; i++) {
-//        printf("args %d = %s\n", i, args[i]);
-//        strcpy(arguments[i], args[i + 1]);
-//    }
+    for (i = 0; i < ct; i++) {
+        printf("args %d = %s\n", i, args[i]);
+    }
 
 
-    if (args[0] == NULL) {
+    if (args[0] == NULL) { //argüman yoksa
 //        printf("heloo");
         return;
     }
     char *command = getCommand(args[0]);
-    strcpy(arguments[0],command);
-    strcpy(arguments[1],args[1]);
-    strcpy(arguments[2],args[2]);
-//    printf("%s",)
+    printf("%s\n", command);
+    int j = 1;
+    char *commandArguments[10];
+    commandArguments[0] = command;
+    while (args[j] != NULL) {
+//        printf("%s\n", args[j]);
+        commandArguments[j] = args[j];
+        j++;
+    }
+    commandArguments[j] = NULL;
+    execCommand(command,commandArguments);
 
-//    execCommand(command,);
 } /* end of setup routine */
 
 /*
@@ -142,12 +147,12 @@ int main(int argc, char *argv[]) {
     char *args[MAX_LINE / 2 + 1]; /*command line arguments */
 
     char *ptr = getenv("PATH"); //path variable ini çeken asıl fonksiyon.
-    printf("%s",ptr);
     while (1) {
         background = 0;
         printf("myshell: ");
         /*setup() calls exit() when Control-D is entered */
         setup(inputBuffer, args, &background);
+        printf("%s", args[0]);
 //        findCommand("lol");
         /** the steps are:
         (1) fork a child process using fork()
@@ -296,6 +301,8 @@ int readDir(char dirName[], char command[]) {//function that read file name from
         } else if (!strcmp(in_file->d_name, "..")) {
             continue;
         } else if (!strcmp(in_file->d_name, command)) {
+            close(FD);
+
             return 0;
         }
 
@@ -313,12 +320,15 @@ char *findPath(char command[]) {
         return NULL;
     } else {
         // while not the end of the list
-        while (pathPtr != NULL) {
-            int result = readDir(pathPtr->data, command);
+        ListNodePtr currentPtr = pathPtr;
+        while (currentPtr != NULL) {
+            int result = readDir(currentPtr->data, command);
             if (result == 0) {
-                return pathPtr->data;
+                char *path = malloc(15);
+                strcpy(path, currentPtr->data);
+                return path;
             }
-            pathPtr = pathPtr->nextPtr;
+            currentPtr = currentPtr->nextPtr;
         }
     }
     return NULL;
@@ -330,6 +340,9 @@ char *getCommand(char command[]) {
     splitString(ptr, delim);
 //    printf("%s", findPath("find"));
     char *commandPath = findPath(command);
+    if (commandPath == NULL) {
+        return NULL;
+    }
     strcat(commandPath, "/");
     strcat(commandPath, command);
 //    printf("%s", commandPath);
