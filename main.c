@@ -5,7 +5,6 @@
 #define MAX_LINE 80 /* 80 chars per line, per command, should be enough. */
 
 
-
 /*
  * hocanın yazdığı yerler mainde yorumda olan kısımlar
  * program ilk çalıştığında bir kere enter a basmak gerekiyor ondan sonra command okumaya başlıyor.
@@ -19,9 +18,9 @@ int main(int argc, char *argv[]) {
     while (1) {
         background = 0;
         printf("myshell: ");
+        fflush(stdout);
         /*setup() calls exit() when Control-D is entered */
         setup(inputBuffer, args, &background);
-        printf("%s", args[0]);
         /** the steps are:
         (1) fork a child process using fork()
         (2) the child process will invoke execv()

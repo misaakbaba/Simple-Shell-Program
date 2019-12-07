@@ -15,7 +15,7 @@
 #include <sys/wait.h>
 #include <dirent.h>
 
-#define SIZE 20
+#define SIZE 100
 
 struct listNode {
     char *data; // each listNode contains a character
@@ -29,13 +29,11 @@ void insert(ListNodePtr *sPtr, char *value) {
     ListNodePtr newPtr = malloc(sizeof(ListNode)); // create node
 
     if (newPtr != NULL) { // is space available
-        newPtr->data = malloc(sizeof(200));
-        strcpy(newPtr->data, value);
+        newPtr->data = strdup(value);
         newPtr->nextPtr = NULL; // node does not link to another node
 
         ListNodePtr previousPtr = NULL;
         ListNodePtr currentPtr = *sPtr;
-
         // loop to find the correct location in the list
         while (currentPtr != NULL && value > currentPtr->data) {
             previousPtr = currentPtr; // walk to ...

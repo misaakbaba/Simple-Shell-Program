@@ -16,18 +16,18 @@
 ListNodePtr pathPtr;
 
 char *splitString(char str[], char delimeter[]) {
-    char temp[250];
+    char temp[300];
     strcpy(temp, str);
-//    char delim[] = ":";
     char *ptr = strtok(temp, delimeter);
+    int index = 0;
     while (ptr != NULL) {
         insert(&pathPtr, ptr);
         ptr = strtok(NULL, delimeter);
     }
 }
 
-char *findPath(char command[]) { // kullanılıyor
-    // if list is empty
+char *findPath(char command[]) {
+//     if list is empty
     if (isEmpty(pathPtr)) {
         puts("List is empty.\n");
         return NULL;
@@ -35,9 +35,10 @@ char *findPath(char command[]) { // kullanılıyor
         // while not the end of the list
         ListNodePtr currentPtr = pathPtr;
         while (currentPtr != NULL) {
+            fflush(stdout);
             int result = readDir(currentPtr->data, command);
             if (result == 0) {
-                char *path = malloc(15);
+                char *path = malloc(50);
                 strcpy(path, currentPtr->data);
                 return path;
             }
@@ -50,16 +51,14 @@ char *findPath(char command[]) { // kullanılıyor
 char *getCommand(char command[]) {
     char delim[] = ":";
     char *ptr = getenv("PATH"); //path variable ini çeken asıl fonksiyon.
+
     splitString(ptr, delim);
-//    printf("%s", findPath("find"));
     char *commandPath = findPath(command);
     if (commandPath == NULL) {
         return NULL;
     }
     strcat(commandPath, "/");
     strcat(commandPath, command);
-//    printf("%s", commandPath);
-//    execCommand(commandPath, commandPath);
     return commandPath;
 }
 
@@ -68,6 +67,7 @@ int readDir(char dirName[], char command[]) {//function that read file name from
     struct dirent *in_file;
     char folder[SIZE];
     strcpy(folder, dirName);
+
     if (NULL == (FD = opendir(folder))) { // folder can not opened
         fprintf(stderr, "Error : Failed to open input directory\n");
         return 1;
@@ -85,7 +85,6 @@ int readDir(char dirName[], char command[]) {//function that read file name from
             return 0;
         }
 
-//        printf("%s\n", in_file->d_name);
     }
     return -1;
 }

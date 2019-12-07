@@ -15,7 +15,7 @@
 #include <sys/wait.h>
 #include <dirent.h>
 
-char *execCommand(char path[], char *arguments[]) {
+int *execCommand(char path[], char *arguments[]) {
     pid_t childpid;
     childpid = fork();
     if (childpid == -1) {
@@ -32,3 +32,5 @@ char *execCommand(char path[], char *arguments[]) {
         return 1;
     }
 }
+
+
