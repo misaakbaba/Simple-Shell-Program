@@ -31,7 +31,7 @@ void setup(char inputBuffer[], char *args[], int *background) {
 
     /* read what the user enters on the command line */
     length = read(STDIN_FILENO, inputBuffer, MAX_LINE);
-    fflush( stdout );
+//    fflush(stdout);
     /* 0 is the system predefined file descriptor for stdin (standard input),
        which is the user's screen in this case. inputBuffer by itself is the
        same as &inputBuffer[0], i.e. the starting address of where to store
@@ -85,29 +85,30 @@ void setup(char inputBuffer[], char *args[], int *background) {
         } /* end of switch */
     }    /* end of for */
     args[ct] = NULL; /* just in case the input line was > 80 */
-    char *arguments[ct];
 #ifdef debug
     for (i = 0; i < ct; i++) {
         printf("args %d = %s\n", i, args[i]);
     }
 #endif
+    char *arguments[ct];
 
-    if (args[0] == NULL) { //argüman yoksa
-        return;
-    }
-    char *command = getCommand(args[0]);
-#ifdef debug
-    printf("%s\n", command);
-#endif
-    int j = 1;
-    char *commandArguments[10];
-    commandArguments[0] = command;
-    while (args[j] != NULL) {
-        printf("%s\n", args[j]);
-        commandArguments[j] = args[j];
-        j++;
-    }
-    commandArguments[j] = NULL;
-    execCommand(command, commandArguments);
+
+//    char *command = getCommand(args[0]);
+//#ifdef debug
+//    printf("%s\n", command);
+//#endif
+//    int j = 1;
+//    char *commandArguments[10];
+//    commandArguments[0] = command;
+//    while (args[j] != NULL) {
+//        printf("%s\n", args[j]);
+//        commandArguments[j] = args[j];
+//        j++;
+//    }
+//    commandArguments[j] = NULL;
+//#ifdef debug
+//    printf("background is:%d\n", *background);
+//#endif
+//    execCommand(command, commandArguments, *background);
 
 } /* end of setup routine */

@@ -21,6 +21,19 @@ int main(int argc, char *argv[]) {
         fflush(stdout);
         /*setup() calls exit() when Control-D is entered */
         setup(inputBuffer, args, &background);
+        if (args[0] == NULL) { //argüman yoksa
+            continue;
+        }
+        char *command = getCommand(args[0]);
+        if (command != NULL) {
+            run(args, command, background, inputBuffer);
+        }
+        if (strcmp(args[0], "exit") == 0) {
+            printf("exit is worked.\n");
+            exitProgram();
+        } else if (strcmp(args[0], "history") == 0) {
+            printHistory(historyPtr);
+        }
         /** the steps are:
         (1) fork a child process using fork()
         (2) the child process will invoke execv()
