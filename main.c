@@ -33,6 +33,10 @@ int main(int argc, char *argv[]) {
             exitProgram();
         } else if (strcmp(args[0], "history") == 0) {
             printHistory(historyPtr);
+        } else if (strcmp(args[0], "jobs") == 0) {
+            printProcesses(bg_processes);
+        } else if (strcmp(args[0], "fg") == 0) {
+            waitBgChilds(bg_processes, 0);
         }
         /** the steps are:
         (1) fork a child process using fork()
