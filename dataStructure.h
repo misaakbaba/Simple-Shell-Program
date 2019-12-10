@@ -19,6 +19,7 @@
 #define SIZE 100
 struct listNode {
     char *data; // each listNode contains a character
+    char *commandPath;
     struct listNode *nextPtr; // pointer to next node
 };
 
@@ -34,11 +35,12 @@ struct childpid_list {
 typedef struct childpid_list childpid_List;
 typedef childpid_List *childpidPtr;
 
-void insert(ListNodePtr *sPtr, char *value) {
+void insert(ListNodePtr *sPtr, char *value, char *commandPath) {
     ListNodePtr newPtr = malloc(sizeof(ListNode)); // create node
 
     if (newPtr != NULL) {
         newPtr->data = strdup(value);
+        newPtr->commandPath = strdup(commandPath);
         newPtr->nextPtr = *sPtr;
         *sPtr = newPtr;
     } else { // no space available
@@ -113,11 +115,11 @@ void printHistory(ListNodePtr currentPtr) {
     if (isEmpty(currentPtr)) {
         puts("List is empty.\n");
     } else {
-        puts("The list is:");
+        puts("The history is:");
         int index = 0;
         // while not the end of the list
         while (currentPtr != NULL && index < 10) {
-            printf("%d %s\n", index, currentPtr->data);
+            printf("%d %s %s\n", index, currentPtr->commandPath, currentPtr->data);
             currentPtr = currentPtr->nextPtr;
             index++;
         }
@@ -136,8 +138,6 @@ void printProcesses(childpidPtr currentPtr) {
             printf("%d  %s\n", currentPtr->childpid, currentPtr->name);
             currentPtr = currentPtr->nextPtr;
         }
-
-
     }
 }
 

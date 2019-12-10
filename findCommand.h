@@ -21,7 +21,7 @@ char *splitString(char str[], char delimeter[]) {
     char *ptr = strtok(temp, delimeter);
     int index = 0;
     while (ptr != NULL) {
-        insert(&pathPtr, ptr);
+        insert(&pathPtr, ptr,"");
         ptr = strtok(NULL, delimeter);
     }
 }

@@ -67,8 +67,10 @@ int main(int argc, char *argv[]) {
         if (strcmp(args[0], "exit") == 0) {
             printf("exit is worked.\n");
             exitProgram();
-        } else if (strcmp(args[0], "history") == 0) {
+        } else if (strcmp(args[0], "history") == 0 && args[1] == NULL) {
             printHistory(historyPtr);
+        } else if (strcmp(args[0], "history") == 0 && strcmp(args[1], "-i") == 0 && args[2] != NULL) {
+            runFromHistory(historyPtr, 0);
         } else if (strcmp(args[0], "jobs") == 0) {
             printProcesses(bg_processes);
         } else if (strcmp(args[0], "fg") == 0 && args[1] != NULL) {
@@ -81,7 +83,7 @@ int main(int argc, char *argv[]) {
         double sum = 0;
         double x;
 
-        act.sa_handler = signalHandler;            /* set up signal handler */
+        act.sa_handler = childSignalHandler;            /* set up signal handler */
         act.sa_flags = 0;
         if ((sigemptyset(&act.sa_mask) == -1) ||
             (sigaction(SIGCHLD, &act, NULL) == -1)) {

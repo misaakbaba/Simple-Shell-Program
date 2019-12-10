@@ -22,17 +22,12 @@ childpidPtr bg_processes = NULL;
 
 int waitChild(pid_t childPid, int background, char *command) {
     if (background == 0) {
-//        pushPid(&fg_processes, childPid, command);
-        popPid(&bg_processes, childPid);
+//        popPid(&bg_processes, childPid);
         if (waitpid(childPid, NULL, 0) > 0) { // bekleme durumu
-//            popPid(&fg_processes, childPid);
             puts("child waited succesfully");
         }
     } else {
-//        popPid(&fg_processes, childPid);
-        pushPid(&bg_processes, childPid, command);
         if (waitpid(childPid, NULL, WNOHANG) > 0) {
-//            popPid(&bg_processes, childPid);
             puts("backgound is finished");
         }
     }
@@ -41,11 +36,6 @@ int waitChild(pid_t childPid, int background, char *command) {
 int *execCommand(char path[], char *arguments[], int background, char *command) {
     pid_t childpid;
     childpid = fork();
-//    if (background == 0) {
-//        pushPid(&fg_processes, childpid, command);
-//    } else {
-//        pushPid(&bg_processes, childpid, command);
-//    }
     if (childpid == -1) {
         perror("Failed to fork");
         return 1;
@@ -60,16 +50,15 @@ int *execCommand(char path[], char *arguments[], int background, char *command) 
 
 
 void exitProgram() {
-    // To hold child process ID
     pid_t child_pid = waitpid(-1, NULL, WNOHANG);
 
     // If there is any child process, wait for it until it is terminated
     if (child_pid == 0) {
         printf("Before exit, you must close background processes!\n");
         return;
-        // If there is no child process, finish the program successfully
+        // If there is no child process, finish
     } else {
-        printf("See you later |(o_o)|\n");
+        printf("exit success");
         exit(EXIT_SUCCESS);
 
     }
@@ -99,20 +88,37 @@ void run(char *args[], char *command, int background, char inputBuffer[]) {
         strcat(tempCommand, " ");
         index++;
     }
-    insert(&historyPtr, tempCommand);
+    insert(&historyPtr, tempCommand, command);
     execCommand(command, commandArguments, background, tempCommand);
-
 }
 
-int waitBgChilds(childpidPtr head, int background, pid_t waitedpid) {
-
-
-}
-
-static void signalHandler() {
+static void childSignalHandler() {
     printf("\nchild is dead\n");
     pid_t deadpid = waitpid(-1, NULL, WNOHANG);
     printf("dead pid is %d\n", deadpid);
     fflush(stdout);
+}
+
+int runFromHistory(ListNodePtr head, int index) {
+    ListNodePtr current = head;
+    int currentindex = 0;
+    char *argv[25];
+    while (current != NULL) {
+        if (currentindex == index) {
+            argv[0] = strdup(current->commandPath);
+            int i = 1;
+            char *str = strdup(current->data);
+            char *ptr = strtok(str, " ");
+            int index = 0;
+            while (ptr != NULL) {
+                argv[i] = strdup(ptr);
+                ptr = strtok(NULL, " ");
+            }
+            argv[i] = NULL;
+            execCommand(current->commandPath, argv, 0, current->data);
+        }
+        current = current->nextPtr;
+        currentindex++;
+    }
 }
 
