@@ -59,12 +59,32 @@ void pushPid(childpidPtr *sPtr, pid_t childpid, char *command) {
     }
 }
 
-void popPid(childpidPtr *head, pid_t childpid) {
-    childpidPtr *temp = head;
-    if (temp != NULL && (*temp)->childpid == childpid) {
-        *head = (*temp)->nextPtr;
-        free(temp);
+void popPid(childpidPtr *sPtr, pid_t childpid) {
+
+    if (*sPtr == NULL) {
         return;
+    }
+    // delete first node if a match is found
+    if (childpid == (*sPtr)->childpid) {
+        childpidPtr tempPtr = *sPtr; // hold onto node being removed
+        *sPtr = (*sPtr)->nextPtr; // de-thread the node
+        free(tempPtr); // free the de-threaded node
+    } else {
+        childpidPtr previousPtr = *sPtr;
+        childpidPtr currentPtr = (*sPtr)->nextPtr;
+
+        // loop to find the correct location in the list
+        while (currentPtr != NULL && currentPtr->childpid != childpid) {
+            previousPtr = currentPtr; // walk to ...
+            currentPtr = currentPtr->nextPtr; // ... next node
+        }
+
+        // delete node at currentPtr
+        if (currentPtr != NULL) {
+            childpidPtr tempPtr = currentPtr;
+            previousPtr->nextPtr = currentPtr->nextPtr;
+            free(tempPtr);
+        }
     }
 }
 

@@ -21,7 +21,7 @@
 
 //#define debug 1 //enable for debugging
 
-void setup(char inputBuffer[], char *args[], int *background) {
+char *setup(char inputBuffer[], char *args[], int *background, int *mode) {
     int length, /* # of characters in the command line */
             i,      /* loop index for accessing inputBuffer array */
             start,  /* index where beginning of next command parameter is */
@@ -91,7 +91,40 @@ void setup(char inputBuffer[], char *args[], int *background) {
     }
 #endif
     char *arguments[ct];
-
+    int index = 0;
+    char *filename = NULL;
+    while (args[index] != NULL) {
+        if (strcmp(args[index], "<") == 0 || strcmp(args[index], "0>") == 0) {
+            *mode = 0;
+            if (args[index + 1] != NULL) {
+                filename = strdup(args[index + 1]);
+            } else {
+                fprintf(stderr, "Enter file direction.");
+            }
+        } else if (strcmp(args[index], ">") == 0 || strcmp(args[index], "1>") == 0) {
+            *mode = 1;
+            if (args[index + 1] != NULL) {
+                filename = strdup(args[index + 1]);
+            } else {
+                fprintf(stderr, "Enter file direction.");
+            }
+        } else if (strcmp(args[index], "2>") == 0) {
+            *mode = 2;
+            if (args[index + 1] != NULL) {
+                filename = strdup(args[index + 1]);
+            } else {
+                fprintf(stderr, "Enter file direction.");
+            }
+        } else if (strcmp(args[index], ">>") == 0) {
+            *mode = 3;
+            if (args[index + 1] != NULL) {
+                filename = strdup(args[index + 1]);
+            } else {
+                fprintf(stderr, "Enter file direction.");
+            }
+        }
+        index++;
+    }
 
 //    char *command = getCommand(args[0]);
 //#ifdef debug
@@ -110,5 +143,5 @@ void setup(char inputBuffer[], char *args[], int *background) {
 //    printf("background is:%d\n", *background);
 //#endif
 //    execCommand(command, commandArguments, *background);
-
+    return filename;
 } /* end of setup routine */
