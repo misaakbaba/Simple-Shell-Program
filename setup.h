@@ -21,7 +21,7 @@
 
 //#define debug 1 //enable for debugging
 
-char *setup(char inputBuffer[], char *args[], int *background, int *mode) {
+char *setup(char inputBuffer[], char *args[], int *background, int *mode,int *doubleMode) {
     int length, /* # of characters in the command line */
             i,      /* loop index for accessing inputBuffer array */
             start,  /* index where beginning of next command parameter is */
@@ -93,29 +93,30 @@ char *setup(char inputBuffer[], char *args[], int *background, int *mode) {
     char *arguments[ct];
     int index = 0;
     char *filename = NULL;
+    //  finding current redirecton mode
     while (args[index] != NULL) {
-        if (strcmp(args[index], "<") == 0 || strcmp(args[index], "0>") == 0) {
+        if (strcmp(args[index], "<") == 0 || strcmp(args[index], "0>") == 0) { // standard input
             *mode = 0;
             if (args[index + 1] != NULL) {
                 filename = strdup(args[index + 1]);
             } else {
                 fprintf(stderr, "Enter file direction.");
             }
-        } else if (strcmp(args[index], ">") == 0 || strcmp(args[index], "1>") == 0) {
+        } else if (strcmp(args[index], ">") == 0 || strcmp(args[index], "1>") == 0) { //standard output
             *mode = 1;
             if (args[index + 1] != NULL) {
                 filename = strdup(args[index + 1]);
             } else {
                 fprintf(stderr, "Enter file direction.");
             }
-        } else if (strcmp(args[index], "2>") == 0) {
+        } else if (strcmp(args[index], "2>") == 0) { // standard error
             *mode = 2;
             if (args[index + 1] != NULL) {
                 filename = strdup(args[index + 1]);
             } else {
                 fprintf(stderr, "Enter file direction.");
             }
-        } else if (strcmp(args[index], ">>") == 0) {
+        } else if (strcmp(args[index], ">>") == 0) { // append mode
             *mode = 3;
             if (args[index + 1] != NULL) {
                 filename = strdup(args[index + 1]);
@@ -126,22 +127,12 @@ char *setup(char inputBuffer[], char *args[], int *background, int *mode) {
         index++;
     }
 
-//    char *command = getCommand(args[0]);
-//#ifdef debug
-//    printf("%s\n", command);
-//#endif
-//    int j = 1;
-//    char *commandArguments[10];
-//    commandArguments[0] = command;
-//    while (args[j] != NULL) {
-//        printf("%s\n", args[j]);
-//        commandArguments[j] = args[j];
-//        j++;
-//    }
-//    commandArguments[j] = NULL;
-//#ifdef debug
-//    printf("background is:%d\n", *background);
-//#endif
-//    execCommand(command, commandArguments, *background);
-    return filename;
+    int k = 0;
+    while(args[k]!=NULL){
+        if (strcmp(args[k], ";") == 0){
+            *doubleMode=1;
+        }
+        k++;
+    }
+    return filename; // return redirection filename
 } /* end of setup routine */

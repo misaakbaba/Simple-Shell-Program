@@ -13,20 +13,24 @@
 #include <dirent.h>
 #include "dataStructure.h"
 
-ListNodePtr pathPtr;
+ListNodePtr pathPtr = NULL;
+ListNodePtr pathPtrDup = NULL;
 
 char *splitString(char str[], char delimeter[]) {
+    //parsing path variable respect to : and insert stack
     char temp[300];
     strcpy(temp, str);
     char *ptr = strtok(temp, delimeter);
     int index = 0;
     while (ptr != NULL) {
-        insert(&pathPtr, ptr,"");
+        insert(&pathPtr, ptr, "");
+        insert(&pathPtrDup, ptr, "");
         ptr = strtok(NULL, delimeter);
     }
 }
 
 char *findPath(char command[]) {
+    // find command run path and return
 //     if list is empty
     if (isEmpty(pathPtr)) {
         puts("List is empty.\n");
@@ -35,7 +39,6 @@ char *findPath(char command[]) {
         // while not the end of the list
         ListNodePtr currentPtr = pathPtr;
         while (currentPtr != NULL) {
-            fflush(stdout);
             int result = readDir(currentPtr->data, command);
             if (result == 0) {
                 char *path = malloc(50);
@@ -49,10 +52,11 @@ char *findPath(char command[]) {
 }
 
 char *getCommand(char command[]) {
-    char delim[] = ":";
-    char *ptr = getenv("PATH"); //path variable ini çeken asıl fonksiyon.
-
-    splitString(ptr, delim);
+    // union of the previous functions
+//    char delim[] = ":";
+//    char *ptr = getenv("PATH"); // get path variable
+//
+//    splitString(ptr, delim);
     char *commandPath = findPath(command);
     if (commandPath == NULL) {
         return NULL;
@@ -79,12 +83,12 @@ int readDir(char dirName[], char command[]) {//function that read file name from
             continue;
         } else if (!strcmp(in_file->d_name, "..")) {
             continue;
-        } else if (!strcmp(in_file->d_name, command)) {
+        } else if (!strcmp(in_file->d_name, command)) { // command found in folder
             close(FD);
-
             return 0;
         }
 
     }
+    close(FD);
     return -1;
 }

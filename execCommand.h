@@ -16,24 +16,23 @@
 #include <dirent.h>
 #include <sys/types.h>
 
-ListNodePtr historyPtr;
-childpidPtr fg_processes = NULL;
-childpidPtr bg_processes = NULL;
+ListNodePtr historyPtr; // history head
 
-int waitChild(pid_t childPid, int background, char *command) {
+int waitChild(pid_t childPid, int background) {
+    // wait child processes function
     if (background == 0) {
-//        popPid(&bg_processes, childPid);
         if (waitpid(childPid, NULL, 0) > 0) { // bekleme durumu
-            puts("child waited succesfully");
+//            puts("child waited succesfully");
         }
     } else {
         if (waitpid(childPid, NULL, WNOHANG) > 0) {
-            puts("backgound is finished");
+//            puts("backgound is finished");
         }
     }
 }
 
-int *execCommand(char path[], char *arguments[], int background, char *command) {
+int *execCommand(char path[], char *arguments[], int background) {
+    // execute command with found path and arguments
     pid_t childpid;
     childpid = fork();
     if (childpid == -1) {
@@ -45,7 +44,7 @@ int *execCommand(char path[], char *arguments[], int background, char *command) 
         perror("Child failed to execv the command");
         return 1;
     }
-    waitChild(childpid, background, command);
+    waitChild(childpid, background);
 }
 
 
@@ -64,7 +63,8 @@ void exitProgram() {
     }
 }
 
-void run(char *args[], char *command, int background, char inputBuffer[]) {
+void run(char *args[], char *command, int background) {
+    // union of the previous functions
 #ifdef debug
     printf("%s\n", command);
 #endif
@@ -73,6 +73,7 @@ void run(char *args[], char *command, int background, char inputBuffer[]) {
     commandArguments[0] = command;
     char tempCommand[80] = "";
     while (args[j] != NULL) {
+        // clear the redirection mark from args
 //        printf("%s\n", args[j]);
         if (strcmp(args[j], ">") == 0 || strcmp(args[j], "1>") == 0 || strcmp(args[j], ">>") == 0 ||
             strcmp(args[j], "<") == 0 || strcmp(args[j], "0>") == 0 || strcmp(args[j], "2>") == 0) {
@@ -88,37 +89,49 @@ void run(char *args[], char *command, int background, char inputBuffer[]) {
         strcat(tempCommand, " ");
         index++;
     }
-    insert(&historyPtr, tempCommand, command);
-    execCommand(command, commandArguments, background, tempCommand);
+    insert(&historyPtr, tempCommand, command); // insert history
+    execCommand(command, commandArguments, background);
 }
 
-static void childSignalHandler() {
-    printf("\nchild is dead\n");
+static void childSignalHandler() { // handling with sigchild signal and wait them
+//    printf("\nchild is dead\n");
     pid_t deadpid = waitpid(-1, NULL, WNOHANG);
     printf("dead pid is %d\n", deadpid);
     fflush(stdout);
 }
 
+static void ctrlzSignalHandler() {
+    pid_t childpid = waitpid(-1, NULL, WNOHANG);
+    printf("%d", childpid);
+    fflush(stdout);
+}
+
 int runFromHistory(ListNodePtr head, int index) {
+    // run from history with -i parameter
     ListNodePtr current = head;
     int currentindex = 0;
     char *argv[25];
     while (current != NULL) {
-        if (currentindex == index) {
+        if (currentindex == index) { // found specified index
             argv[0] = strdup(current->commandPath);
             int i = 1;
             char *str = strdup(current->data);
             char *ptr = strtok(str, " ");
+            ptr = strtok(NULL, " ");
             int index = 0;
             while (ptr != NULL) {
                 argv[i] = strdup(ptr);
                 ptr = strtok(NULL, " ");
+                i++;
             }
             argv[i] = NULL;
-            execCommand(current->commandPath, argv, 0, current->data);
+            execCommand(current->commandPath, argv, 0);
         }
         current = current->nextPtr;
         currentindex++;
     }
 }
+
+
+
 

@@ -26,14 +26,6 @@ struct listNode {
 typedef struct listNode ListNode; // synonym for struct listNode
 typedef ListNode *ListNodePtr; // synonym for ListNode*
 
-struct childpid_list {
-    pid_t childpid;
-    char *name;
-    struct childpid_list *nextPtr;
-};
-
-typedef struct childpid_list childpid_List;
-typedef childpid_List *childpidPtr;
 
 void insert(ListNodePtr *sPtr, char *value, char *commandPath) {
     ListNodePtr newPtr = malloc(sizeof(ListNode)); // create node
@@ -48,42 +40,29 @@ void insert(ListNodePtr *sPtr, char *value, char *commandPath) {
     }
 }
 
-void pushPid(childpidPtr *sPtr, pid_t childpid, char *command) {
-    childpidPtr newPtr = malloc(sizeof(childpid_List)); // create node
-
-    if (newPtr != NULL) {
-        newPtr->childpid = childpid;
-        newPtr->name = strdup(command);
-        newPtr->nextPtr = *sPtr;
-        *sPtr = newPtr;
-    } else { // no space available
-        printf("value not inserted. No memory available.\n");
-    }
-}
-
-void popPid(childpidPtr *sPtr, pid_t childpid) {
+void pop(ListNodePtr *sPtr, char *deletePath) {
 
     if (*sPtr == NULL) {
         return;
     }
     // delete first node if a match is found
-    if (childpid == (*sPtr)->childpid) {
-        childpidPtr tempPtr = *sPtr; // hold onto node being removed
+    if (strcmp(deletePath, (*sPtr)->data) == 0) {
+        ListNodePtr tempPtr = *sPtr; // hold onto node being removed
         *sPtr = (*sPtr)->nextPtr; // de-thread the node
         free(tempPtr); // free the de-threaded node
     } else {
-        childpidPtr previousPtr = *sPtr;
-        childpidPtr currentPtr = (*sPtr)->nextPtr;
+        ListNodePtr previousPtr = *sPtr;
+        ListNodePtr currentPtr = (*sPtr)->nextPtr;
 
         // loop to find the correct location in the list
-        while (currentPtr != NULL && currentPtr->childpid != childpid) {
+        while (currentPtr != NULL && strcmp(deletePath, (*sPtr)->data) != 0) {
             previousPtr = currentPtr; // walk to ...
             currentPtr = currentPtr->nextPtr; // ... next node
         }
 
         // delete node at currentPtr
         if (currentPtr != NULL) {
-            childpidPtr tempPtr = currentPtr;
+            ListNodePtr tempPtr = currentPtr;
             previousPtr->nextPtr = currentPtr->nextPtr;
             free(tempPtr);
         }
@@ -126,18 +105,19 @@ void printHistory(ListNodePtr currentPtr) {
     }
 }
 
-void printProcesses(childpidPtr currentPtr) {
+void printPath(ListNodePtr head) {
+    ListNodePtr currentPtr = head;
     // if list is empty
-    childpidPtr copy = currentPtr;
     if (isEmpty(currentPtr)) {
         puts("List is empty.\n");
     } else {
-        puts("background Processes is:");
+        puts("The path variable is:");
         // while not the end of the list
         while (currentPtr != NULL) {
-            printf("%d  %s\n", currentPtr->childpid, currentPtr->name);
+            printf("%s:", currentPtr->data);
             currentPtr = currentPtr->nextPtr;
         }
+        puts("");
     }
 }
 

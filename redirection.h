@@ -19,18 +19,18 @@
 
 int redirection(char *argv[], char *command, char *filename, int mode, char *commandHistory) {
     int fd;
-
+    // default values of stdin,stdout,stderr
     int inDefault = dup(0);
     int outDefault = dup(1);
     int errDefault = dup(2);
-    if (mode == 0) { //standart input
+    if (mode == 0) { // standart input
         fd = open(filename, CREATE_FLAGS_WRITE, CREATE_MODE);
         if (fd == -1) {
             perror("Failed to open file");
             return 1;
         }
-        if (dup2(fd, STDOUT_FILENO) == -1) {
-            perror("Failed to redirect standard output");
+        if (dup2(fd, STDIN_FILENO) == -1) {
+            perror("Failed to redirect standard input");
             return 1;
         }
     } else if (mode == 1) { // standart output
@@ -49,26 +49,28 @@ int redirection(char *argv[], char *command, char *filename, int mode, char *com
             perror("Failed to open file");
             return 1;
         }
-        if (dup2(fd, STDOUT_FILENO) == -1) {
-            perror("Failed to redirect standard output");
+        if (dup2(fd, STDERR_FILENO) == -1) {
+            perror("Failed to redirect standard error");
             return 1;
         }
-    } else if (mode == 3) { // append
+    } else if (mode == 3) { // append mode
         fd = open(filename, CREATE_FLAGS_APPEND, CREATE_MODE);
         if (fd == -1) {
             perror("Failed to open file");
             return 1;
         }
         if (dup2(fd, STDOUT_FILENO) == -1) {
-            perror("Failed to redirect standard output");
+            perror("Failed to redirect append output");
             return 1;
         }
     }
-    execCommand(command, argv, 0, commandHistory);
+    insert(&historyPtr, commandHistory, "");
+    execCommand(command, argv, 0);
     if (close(fd) == -1) {
         perror("Failed to close the file");
         return 1;
     }
+    // change dup2 function redirections with default values
     fflush(stdin);
     fflush(stdout);
     fflush(stderr);
