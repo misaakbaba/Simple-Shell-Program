@@ -34,10 +34,12 @@ int main(int argc, char *argv[]) {
         if (args[0] == NULL) { //if there is no argument take another input
             continue;
         }
-        if (doubleCommandMode == 1){
+        if (doubleCommandMode == 1) {
             //double mode
+            doubleMode(args);
+            continue;
         }
-            char *command = getCommand(args[0]); // command finded in path variable and returned its actual path
+        char *command = getCommand(args[0]); // command finded in path variable and returned its actual path
         if (command != NULL && redirectionMode == -1) {// normal mode
             run(args, command, background); // run command
         } else if (command != NULL && redirectionMode != -1) { // redirection mode

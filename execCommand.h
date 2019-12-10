@@ -132,6 +132,42 @@ int runFromHistory(ListNodePtr head, int index) {
     }
 }
 
+void doubleMode(char *args[]) {
+    char *command1 = getCommand(args[0]);
+    char *command2 = NULL;
+    char *argv1[25];
+    char *argv2[25];
+    int index = 0;
+    while (args[index] != NULL) {
+        if (strcmp(args[index], ";") == 0 && args[index + 1] != NULL) {
+            command2 = getCommand(args[index + 1]);
+        }
+        index++;
+    }
+    if (command1 == NULL || command2 == NULL) {
+        return;
+    }
+    argv1[0] = command1;
+    argv2[0] = command2;
+    index = 1;
+    while (args[index] != NULL && strcmp(args[index], ";") != 0) {
+        argv1[index] = args[index];
+        index++;
+    }
+    argv1[index] = NULL;
+    index += 2;
+    int newindex = 1;
+    while (args[index] != NULL) {
+        argv2[newindex] = args[index];
+        index++;
+        newindex++;
+    }
+    argv2[newindex] = NULL;
+    puts("done");
+    execCommand(command1, argv1, 0);
+    execCommand(command2, argv2, 0);
+
+}
 
 
 
